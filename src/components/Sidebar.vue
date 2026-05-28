@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 import {
   LayoutDashboard,
@@ -12,15 +13,37 @@ import {
 
 const router = useRouter()
 
-const handleLogout = () => {
+const handleLogout = async () => {
 
-  // Remove fake session
-  localStorage.removeItem('isAuthenticated')
+  try {
 
-  // Redirect to login
-  router.push('/login')
+    const token = localStorage.getItem('token')
+
+    if (token) {
+
+      await axios.post(
+        'http://202.133.94.241:8000/api/logout',
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+    }
+
+  } catch (error) {
+
+    console.log(error)
+
+  } finally {
+
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+
+    router.push('/login')
+  }
 }
-
 </script>
 
 <template>

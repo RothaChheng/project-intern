@@ -1,371 +1,343 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 
-const currentForm = ref('login')
-
-const username = ref('')
+const email = ref('')
 const password = ref('')
 
-const switchForm = (form) => {
-  currentForm.value = form
-}
+const loading = ref(false)
+const errorMessage = ref('')
 
-/* Login Function */
+const login = async () => {
 
-const handleLogin = () => {
+  errorMessage.value = ''
+  loading.value = true
 
-  if (!username.value || !password.value) {
+  try {
 
-    alert('Please enter username and password')
+    const response = await axios.post(
+      'http://202.133.94.241:8000/api/login',
+      {
+        email: email.value,
+        password: password.value
+      }
+    )
 
-    return
+    // Save token
+    localStorage.setItem(
+      'token',
+      response.data.token
+    )
+
+    // Save user
+    localStorage.setItem(
+      'user',
+      JSON.stringify(response.data.user)
+    )
+
+    // Redirect dashboard
+    router.push('/dashboard')
+
+  } catch (error) {
+
+    console.log(error)
+
+    if (error.response?.data?.message){
+
+      errorMessage.value =
+        error.response.data.message
+    } else {
+      errorMessage.value =
+        'Login failed'
+    }
+
+  } finally {
+
+    loading.value = false
   }
-
-  // Temporary fake authentication
-
-  router.push('/dashboard')
 }
 </script>
 
 <template>
-  <div class="login-page">
 
-    <!-- Left Panel -->
+  <div class="login-container">
+
+    <!-- LEFT PANEL -->
     <div class="left-panel">
 
       <div class="brand">
+
         <h1>SecureBank</h1>
+
         <p>Your Trust, Our Priority</p>
+
       </div>
 
-      <div class="illustration">
-        <div class="bank-icon">
-          🏦
-        </div>
-      </div>
+      <div class="welcome-content">
 
-      <div class="welcome-text">
         <h2>Welcome Back!</h2>
 
         <p>
-          Please access your banking account securely.
+          Securely access your banking dashboard
+          and manage your financial activities.
         </p>
+
       </div>
 
     </div>
 
-    <!-- Right Panel -->
+    <!-- RIGHT PANEL -->
     <div class="right-panel">
 
       <div class="login-card">
 
-        <!-- LOGIN FORM -->
-        <div v-if="currentForm === 'login'">
+        <h2>Login to Your Account</h2>
 
-          <h2>Login to Your Account</h2>
+        <form @submit.prevent="login">
 
-          <form @submit.prevent="handleLogin">
-
-            <label>Username</label>
-
-            <input
-              type="text"
-              placeholder="Enter your username"
-              v-model="username"
-            />
-
-            <label>Password</label>
-
-            <input
-              type="password"
-              placeholder="Enter your password"
-              v-model="password"
-            />
-
-            <div class="options">
-
-              <div class="remember">
-                <input type="checkbox" />
-                <span>Remember me</span>
-              </div>
-
-              <a
-                href="#"
-                @click.prevent="switchForm('forgot')"
-              >
-                Forgot password?
-              </a>
-
-            </div>
-
-            <button>
-              Login
-            </button>
-
-          </form>
-
-          <p class="bottom-text">
-            Don’t have an account?
-
-            <a
-              href="#"
-              @click.prevent="switchForm('signup')"
-            >
-              Sign up
-            </a>
-          </p>
-
-        </div>
-
-        <!-- SIGN UP FORM -->
-        <div v-if="currentForm === 'signup'">
-
-          <h2>Create New Account</h2>
-
-          <form>
-
-            <label>Full Name</label>
-
-            <input
-              type="text"
-              placeholder="Enter your full name"
-            />
+          <!-- EMAIL -->
+          <div class="form-group">
 
             <label>Email</label>
 
             <input
+              v-model="email"
               type="email"
               placeholder="Enter your email"
+              required
             />
+
+          </div>
+
+          <!-- PASSWORD -->
+          <div class="form-group">
 
             <label>Password</label>
 
             <input
+              v-model="password"
               type="password"
-              placeholder="Create password"
+              placeholder="Enter your password"
+              required
             />
 
-            <button>
-              Create Account
-            </button>
+          </div>
 
-          </form>
-
-          <p class="bottom-text">
-            Already have an account?
-
-            <a
-              href="#"
-              @click.prevent="switchForm('login')"
-            >
-              Login
-            </a>
+          <!-- ERROR -->
+          <p
+            v-if="errorMessage"
+            class="error-message"
+          >
+            {{ errorMessage }}
           </p>
+
+          <!-- BUTTON -->
+          <button
+            type="submit"
+            :disabled="loading"
+          >
+
+            {{
+              loading
+                ? 'Logging in...'
+                : 'Login'
+            }}
+
+          </button>
+
+        </form>
+
+        <!-- REGISTER -->
+        <div class="signup-link">
+
+          <span>
+            Don't have an account?
+          </span>
+
+          <router-link to="/register">
+            Sign up
+          </router-link>
 
         </div>
 
-        <!-- FORGOT PASSWORD -->
-        <div v-if="currentForm === 'forgot'">
+        <div class="forgot-password">
 
-          <h2>Forgot Password</h2>
-
-          <form>
-
-            <label>Email Address</label>
-
-            <input
-              type="email"
-              placeholder="Enter your email"
-            />
-
-            <button>
-              Reset Password
-            </button>
-
-          </form>
-
-          <p class="bottom-text">
-
-            Remember your password?
-
-            <a
-              href="#"
-              @click.prevent="switchForm('login')"
-            >
-              Back to Login
-            </a>
-
-          </p>
+          <router-link to="/forgot-password">
+            Forgot Password?
+          </router-link>
 
         </div>
 
-      </div>
-
-      <div class="footer">
-        © 2026 SecureBank. All rights reserved.
       </div>
 
     </div>
 
   </div>
-</template>
 
-<script>
-export default {
-  name: 'LoginPage',
-}
-</script>
+</template>
 
 <style scoped>
 
-/* Layout */
-
-.login-page {
-  display: flex;
-  min-height: 100vh;
-  background: #f8fafc;
+* {
+  box-sizing: border-box;
 }
 
-/* Left Panel */
+.login-container {
+
+  display: flex;
+
+  min-height: 100vh;
+
+  font-family: Arial, sans-serif;
+}
+
+/* LEFT */
 
 .left-panel {
+
   width: 45%;
-  background: linear-gradient(to bottom, #1d4ed8, #1e3a8a);
+
+  background: linear-gradient(
+    135deg,
+    #081f5c,
+    #334dff
+  );
 
   color: white;
 
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 
-  padding: 50px;
+  flex-direction: column;
+
+  justify-content: center;
+
+  padding: 60px;
 }
 
 .brand h1 {
-  font-size: 36px;
+
+  font-size: 42px;
+
   margin-bottom: 10px;
 }
 
 .brand p {
+
   opacity: 0.8;
 }
 
-.illustration {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
+.welcome-content {
+
+  margin-top: 80px;
 }
 
-.bank-icon {
-  font-size: 180px;
+.welcome-content h2 {
+
+  font-size: 36px;
+
+  margin-bottom: 20px;
 }
 
-.welcome-text {
-  text-align: center;
+.welcome-content p {
+
+  line-height: 1.7;
+
+  opacity: 0.9;
 }
 
-.welcome-text h2 {
-  margin-bottom: 15px;
-  font-size: 32px;
-}
-
-/* Right Panel */
+/* RIGHT */
 
 .right-panel {
+
   width: 55%;
 
   display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
 
-  position: relative;
+  justify-content: center;
+
+  align-items: center;
+
+  background: #f4f7fc;
 }
 
-/* Card */
-
 .login-card {
-  width: 430px;
+
+  width: 420px;
+
   background: white;
 
-  padding: 50px;
+  padding: 40px;
 
   border-radius: 20px;
 
-  box-shadow: 0px 10px 30px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
 .login-card h2 {
-  margin-bottom: 35px;
-  color: #0f172a;
+
+  margin-bottom: 30px;
+
+  color: #0b1b4d;
 }
 
-/* Form */
-
-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #475569;
-  font-size: 14px;
-}
-
-input[type="text"],
-input[type="password"],
-input[type="email"] {
-
-  width: 100%;
-  padding: 14px;
+.form-group {
 
   margin-bottom: 20px;
+}
 
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
+.form-group label {
+
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #444;
+}
+
+.form-group input {
+
+  width: 100%;
+
+  padding: 14px;
+
+  border: 1px solid #ccd4e0;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+
+  transition: 0.3s;
+}
+
+.form-group input:focus {
 
   outline: none;
+
+  border-color: #4d5dff;
 }
-
-input:focus {
-  border-color: #2563eb;
-}
-
-/* Options */
-
-.options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  margin-bottom: 25px;
-}
-
-.remember {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.options a {
-  color: #4f46e5;
-  text-decoration: none;
-}
-
-/* Button */
 
 button {
+
   width: 100%;
+
   padding: 15px;
 
   border: none;
-  border-radius: 10px;
 
-  background: linear-gradient(to right, #4f46e5, #2563eb);
+  border-radius: 12px;
+
+  background: linear-gradient(
+    to right,
+    #5b4bff,
+    #2d6bff
+  );
 
   color: white;
-  font-size: 16px;
+
+  font-size: 17px;
 
   cursor: pointer;
 
@@ -373,28 +345,90 @@ button {
 }
 
 button:hover {
+
   opacity: 0.9;
 }
 
-/* Bottom Text */
+button:disabled {
 
-.bottom-text {
-  margin-top: 25px;
+  opacity: 0.7;
+
+  cursor: not-allowed;
+}
+
+.error-message {
+
+  color: red;
+
+  margin-bottom: 15px;
+
+  font-size: 14px;
+}
+
+.signup-link {
+
+  margin-top: 20px;
+
   text-align: center;
-  color: #64748b;
 }
 
-.bottom-text a {
-  color: #4f46e5;
+.signup-link a {
+
+  margin-left: 5px;
+
+  color: #4d5dff;
+
   text-decoration: none;
+
+  font-weight: bold;
 }
 
-/* Footer */
+.forgot-password {
 
-.footer {
-  position: absolute;
-  bottom: 30px;
-  color: #94a3b8;
+  text-align: center;
+
+  margin-bottom: 20px;
+}
+
+.forgot-password a {
+
+  color: #4d5dff;
+
+  text-decoration: none;
+
+  font-size: 14px;
+}
+
+.forgot-password a:hover {
+
+  text-decoration: underline;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+  .login-container {
+
+    flex-direction: column;
+  }
+
+  .left-panel,
+  .right-panel {
+
+    width: 100%;
+  }
+
+  .left-panel {
+
+    padding: 40px;
+  }
+
+  .login-card {
+
+    width: 90%;
+  }
 }
 
 </style>
