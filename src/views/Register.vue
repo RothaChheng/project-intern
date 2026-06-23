@@ -16,7 +16,7 @@ const register = async () => {
   try {
 
     await axios.post(
-      'http://202.133.94.241:8000/api/register',
+      `${import.meta.env.VITE_API_BASE_URL}/register`,
       {
         name: name.value,
         email: email.value,

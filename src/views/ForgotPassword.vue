@@ -26,7 +26,7 @@ const resetPassword = async () => {
 
     const response = await axios.post(
 
-      'http://202.133.94.241:8000/api/forgot-password',
+      `${import.meta.env.VITE_API_BASE_URL}/forgot-password`,
 
       {
         email: email.value,

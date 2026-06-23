@@ -1,7 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Eye, EyeOff} from 'lucide-vue-next'
 import axios from 'axios'
+
+const showPassword = ref(false)
 
 const router = useRouter()
 
@@ -19,7 +22,7 @@ const login = async () => {
   try {
 
     const response = await axios.post(
-      'http://202.133.94.241:8000/api/login',
+      `${import.meta.env.VITE_API_BASE_URL}/login`,
       {
         email: email.value,
         password: password.value
@@ -117,13 +120,31 @@ const login = async () => {
 
             <label>Password</label>
 
-            <input
-              v-model="password"
-              type="password"
-              placeholder="Enter your password"
-              required
-            />
+            <div class="password-wrapper">
 
+              <input
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Enter your password"
+                required
+              >
+
+              <span
+                class="password-toggle"
+                @click="showPassword = !showPassword"
+              >
+
+                <Eye
+                  v-if="!showPassword"
+                  :size="22"
+                />
+
+                <EyeOff
+                  v-else
+                  :size="22"
+                />
+              </span>
+            </div>
           </div>
 
           <!-- ERROR -->
@@ -286,6 +307,35 @@ const login = async () => {
 .form-group {
 
   margin-bottom: 20px;
+}
+
+.password-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding: 14px 50px 14px 14px;
+  border: 1px solid #ccd4e0;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+.password-toggle{
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: #4d5dff;
 }
 
 .form-group label {

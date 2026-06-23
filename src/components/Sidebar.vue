@@ -22,7 +22,7 @@ const handleLogout = async () => {
     if (token) {
 
       await axios.post(
-        'http://202.133.94.241:8000/api/logout',
+        'http://202.133.94.245:8000/api/logout',
         {},
         {
           headers: {
